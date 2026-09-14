@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- saved from url=(0077)file:///C:/Users/kseniya.zenkina/Downloads/deepseek_html_20260914_083977.html -->
-<html lang="ru"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html lang="ru"><head><meta http-equiv="Content-Type" content="catext/html; charset=UTF-8">
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Карта путешествия: Абу-Даби — Япония</title>
@@ -369,11 +369,31 @@
         attributionControl: false
     }).setView([30, 100], 3);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
-        subdomains: 'abcd',
-        maxZoom: 19
-    }).addTo(map);
+// Основной провайдер — CartoDB (тёмный)
+var cartoLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap &copy; CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19
+});
+
+// Запасной провайдер — OpenStreetMap (работает везде)
+var osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 19
+});
+
+// Если CartoDB не грузится — автоматически переключаемся на OSM
+var errorsCount = 0;
+cartoLayer.on('tileerror', function() {
+    errorsCount++;
+    if (errorsCount === 3) {
+        console.warn('CartoDB недоступен, переключаюсь на OpenStreetMap');
+        map.removeLayer(cartoLayer);
+        osmLayer.addTo(map);
+    }
+});
+
+cartoLayer.addTo(map);
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
